@@ -1,6 +1,6 @@
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import fs from "node:fs";
-import type { Canvas, CanvasRenderingContext2D, Image } from "canvas";
+import type { Canvas, SKRSContext2D as CanvasRenderingContext2D, Image } from "@napi-rs/canvas";
 import type { SelectedElement } from "./dna.js";
 import type { ElementFile } from "./layer-loader.js";
 

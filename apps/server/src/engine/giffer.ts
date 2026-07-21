@@ -1,6 +1,6 @@
 import GifEncoderModule from "gif-encoder-2";
 import { writeFile } from "node:fs";
-import type { Canvas, CanvasRenderingContext2D } from "canvas";
+import type { Canvas, SKRSContext2D as CanvasRenderingContext2D } from "@napi-rs/canvas";
 
 type GifEncoder = GifEncoderModule;
 
