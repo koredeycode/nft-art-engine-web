@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const startGenerationSchema = z.object({
   layerConfigId: z.string().optional(),
+  totalEditions: z.number().int().positive().max(10000).optional().default(10),
 });
 
 export const generationStatusSchema = z.object({

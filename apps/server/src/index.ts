@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { serve } from "@hono/node-server";
 import { cors } from "hono/cors";
 import type { Server } from "node:http";
+import fs from "node:fs";
+import path from "node:path";
 import { projectsRouter } from "./routes/projects.js";
 import { layersRouter } from "./routes/layers.js";
 import { generationRouter } from "./routes/generation.js";
@@ -28,6 +30,21 @@ app.route("/api/generation", generationRouter);
 app.route("/api/exports", exportsRouter);
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
+
+const UPLOADS_DIR = path.resolve(process.env.UPLOADS_DIR ?? "data/uploads");
+app.get("/api/uploads/:filename", async (c) => {
+  const filename = c.req.param("filename");
+  const filePath = path.join(UPLOADS_DIR, path.basename(filename));
+  if (!fs.existsSync(filePath)) return c.json({ error: "not found" }, 404);
+  const buffer = fs.readFileSync(filePath);
+  const ext = path.extname(filename).toLowerCase();
+  const mime =
+    ext === ".png" ? "image/png" :
+    ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" :
+    ext === ".gif" ? "image/gif" :
+    "application/octet-stream";
+  return c.newResponse(buffer, { headers: { "Content-Type": mime } });
+});
 
 const port = Number(process.env.PORT ?? 3001);
 

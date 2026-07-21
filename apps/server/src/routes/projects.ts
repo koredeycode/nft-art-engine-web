@@ -2,15 +2,46 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { createProjectSchema, updateProjectSchema } from "@nft-engine/shared";
 import { db } from "../db/index.js";
-import { projects } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { projects, layers, elements } from "../db/schema.js";
+import { eq, inArray } from "drizzle-orm";
 import crypto from "node:crypto";
+import { getUserFromContext } from "../lib/auth.js";
 
 export const projectsRouter = new Hono();
 
 projectsRouter.get("/", async (c) => {
-  const all = await db.select().from(projects).all();
-  return c.json(all);
+  const user = await getUserFromContext(c);
+  const allProjects = await db.select().from(projects).all();
+  
+  // Attach layer and element counts for rich dashboard cards
+  const projectList = await Promise.all(
+    allProjects.map(async (p) => {
+      const projLayers = await db
+        .select()
+        .from(layers)
+        .where(eq(layers.projectId, p.id))
+        .all();
+      
+      let elementCount = 0;
+      if (projLayers.length > 0) {
+        const layerIds = projLayers.map((l) => l.id);
+        const projElements = await db
+          .select()
+          .from(elements)
+          .where(inArray(elements.layerId, layerIds))
+          .all();
+        elementCount = projElements.length;
+      }
+
+      return {
+        ...p,
+        layerCount: projLayers.length,
+        elementCount,
+      };
+    })
+  );
+
+  return c.json(projectList);
 });
 
 projectsRouter.get("/:id", async (c) => {
@@ -29,10 +60,12 @@ projectsRouter.post(
   zValidator("json", createProjectSchema),
   async (c) => {
     const data = c.req.valid("json");
+    const user = await getUserFromContext(c);
+    const userId = user?.id ?? "default";
     const now = new Date();
     const project = {
       id: crypto.randomUUID(),
-      userId: "default",
+      userId,
       name: data.name,
       createdAt: now,
       updatedAt: now,
@@ -70,6 +103,18 @@ projectsRouter.patch(
 
 projectsRouter.delete("/:id", async (c) => {
   const id = c.req.param("id");
+  // Delete associated layers and elements
+  const projLayers = await db
+    .select()
+    .from(layers)
+    .where(eq(layers.projectId, id))
+    .all();
+  
+  for (const l of projLayers) {
+    await db.delete(elements).where(eq(elements.layerId, l.id)).run();
+  }
+  await db.delete(layers).where(eq(layers.projectId, id)).run();
   await db.delete(projects).where(eq(projects.id, id)).run();
   return c.json({ ok: true });
 });
+
