@@ -1,0 +1,44 @@
+{
+  "name": "@nft-engine/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check src/",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.13.0",
+    "@hono/zod-validator": "^0.4.0",
+    "@libsql/client": "^0.14.0",
+    "@nft-engine/shared": "workspace:*",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.52.0",
+    "@opentelemetry/exporter-prometheus": "^0.55.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.55.0",
+    "@opentelemetry/sdk-node": "^0.55.0",
+    "@opentelemetry/sdk-trace-node": "^1.30.0",
+    "better-auth": "^1.1.0",
+    "bullmq": "^5.34.0",
+    "canvas": "^2.11.0",
+    "drizzle-orm": "^0.38.0",
+    "gif-encoder-2": "^1.0.5",
+    "hono": "^4.7.0",
+    "pino": "^9.5.0",
+    "sha1": "^1.1.1",
+    "ws": "^8.18.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "drizzle-kit": "^0.30.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
