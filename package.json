@@ -1,0 +1,23 @@
+{
+  "name": "nft-art-engine-web",
+  "private": true,
+  "packageManager": "pnpm@10.0.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "biome check .",
+    "format": "biome format --write .",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:server": "pnpm --filter @nft-engine/server test",
+    "test:web": "pnpm --filter @nft-engine/web test",
+    "db:generate": "pnpm --filter @nft-engine/server db:generate",
+    "db:migrate": "pnpm --filter @nft-engine/server db:migrate",
+    "db:studio": "pnpm --filter @nft-engine/server db:studio"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  }
+}

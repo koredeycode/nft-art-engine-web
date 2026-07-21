@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.turbo/
+*.db
+*.db-wal
+*.db-shm
+storage/
+apps/server/data/
+.env
+.env.local
+*.log
