@@ -4,12 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch --ignore ./data --ignore ./drizzle src/index.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "biome check src/",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:push": "drizzle-kit push --config=drizzle.config.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",

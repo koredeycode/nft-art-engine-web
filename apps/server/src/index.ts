@@ -10,8 +10,11 @@ import { auth } from "./lib/auth.js";
 import { logger } from "./lib/logger.js";
 import { initTelemetry } from "./lib/observability.js";
 import { initWebSocket } from "./lib/ws.js";
+import { runMigrations } from "./db/migrate.js";
 
 initTelemetry();
+
+await runMigrations();
 
 const app = new Hono();
 
