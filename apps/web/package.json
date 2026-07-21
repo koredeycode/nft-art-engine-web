@@ -13,10 +13,12 @@
   "dependencies": {
     "@hono/zod-validator": "^0.4.0",
     "@nft-engine/shared": "workspace:*",
+    "@tailwindcss/vite": "^4.3.3",
     "hono": "^4.7.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router": "^7.1.0",
+    "tailwindcss": "^4.3.3",
     "zod": "^3.24.0"
   },
   "devDependencies": {

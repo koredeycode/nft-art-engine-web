@@ -1,8 +1,14 @@
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { DashboardPage, loader as dashboardLoader } from "@/pages/dashboard";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <DashboardPage />,
+    loader: dashboardLoader,
+  },
+]);
+
 export function App() {
-  return (
-    <div>
-      <h1>NFT Art Engine</h1>
-      <p>Welcome to the NFT Art Engine web application.</p>
-    </div>
-  );
+  return <RouterProvider router={router} />;
 }
