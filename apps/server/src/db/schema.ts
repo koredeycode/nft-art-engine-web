@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
@@ -10,14 +10,18 @@ export const users = sqliteTable("users", {
 
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
   expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 });
 
 export const projects = sqliteTable("projects", {
   id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id),
   name: text("name").notNull(),
   network: text("network", { enum: ["eth", "sol"] }).default("eth"),
   namePrefix: text("name_prefix"),
@@ -40,7 +44,9 @@ export const projects = sqliteTable("projects", {
 
 export const layers = sqliteTable("layers", {
   id: text("id").primaryKey(),
-  projectId: text("project_id").notNull().references(() => projects.id),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id),
   name: text("name").notNull(),
   order: integer("order").notNull(),
   blendMode: text("blend_mode").default("source-over"),
@@ -50,7 +56,9 @@ export const layers = sqliteTable("layers", {
 
 export const elements = sqliteTable("elements", {
   id: text("id").primaryKey(),
-  layerId: text("layer_id").notNull().references(() => layers.id),
+  layerId: text("layer_id")
+    .notNull()
+    .references(() => layers.id),
   filename: text("filename").notNull(),
   weight: integer("weight").default(1),
   createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
@@ -58,10 +66,14 @@ export const elements = sqliteTable("elements", {
 
 export const generationJobs = sqliteTable("generation_jobs", {
   id: text("id").primaryKey(),
-  projectId: text("project_id").notNull().references(() => projects.id),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id),
   status: text("status", {
     enum: ["queued", "running", "completed", "failed", "cancelled"],
-  }).notNull().default("queued"),
+  })
+    .notNull()
+    .default("queued"),
   totalEditions: integer("total_editions").notNull(),
   currentEdition: integer("current_edition").default(0),
   progress: real("progress").default(0),
