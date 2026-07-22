@@ -1,7 +1,7 @@
-import { Link, useLocation } from "react-router";
-import { Sparkles, Layers, LogOut, Sun, Moon } from "lucide-react";
-import { useSession, signOut } from "@/lib/auth-client";
+import { signOut, useSession } from "@/lib/auth-client";
 import { useTheme } from "@/lib/theme";
+import { Layers, LogOut, Moon, Sparkles, Sun } from "lucide-react";
+import { Link, useLocation } from "react-router";
 
 interface NavbarProps {
   children?: React.ReactNode;
@@ -50,7 +50,11 @@ export function Navbar({ children }: NavbarProps) {
         </div>
 
         {/* Center / Custom Children (Top Nav Generation Engine & Gallery Toggle) */}
-        {children && <div className="flex items-center gap-3 overflow-x-auto min-w-0 flex-1 justify-center">{children}</div>}
+        {children && (
+          <div className="flex items-center gap-3 overflow-x-auto min-w-0 flex-1 justify-center">
+            {children}
+          </div>
+        )}
 
         {/* Right: Theme Toggle & User Auth Profile */}
         <div className="flex items-center gap-2 shrink-0">
@@ -59,13 +63,19 @@ export function Navbar({ children }: NavbarProps) {
             className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-colors flex items-center gap-1 text-xs"
             title={`Switch to ${theme === "light" ? "Dark" : "Light"} mode`}
           >
-            {theme === "light" ? <Moon className="w-3.5 h-3.5 text-slate-700" /> : <Sun className="w-3.5 h-3.5 text-amber-400" />}
+            {theme === "light" ? (
+              <Moon className="w-3.5 h-3.5 text-slate-700" />
+            ) : (
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+            )}
           </button>
 
           {session?.user ? (
             <div className="flex items-center gap-2 pl-2 border-l border-slate-200 dark:border-slate-800">
               <div className="w-6 h-6 rounded-full bg-indigo-600 text-white font-semibold text-[11px] flex items-center justify-center shadow-xs">
-                {session.user.name?.[0]?.toUpperCase() || session.user.email?.[0]?.toUpperCase() || "U"}
+                {session.user.name?.[0]?.toUpperCase() ||
+                  session.user.email?.[0]?.toUpperCase() ||
+                  "U"}
               </div>
               <button
                 onClick={handleSignOut}

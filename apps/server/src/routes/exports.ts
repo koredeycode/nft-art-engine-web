@@ -1,6 +1,6 @@
-import { Hono } from "hono";
 import fs from "node:fs";
 import path from "node:path";
+import { Hono } from "hono";
 import JSZip from "jszip";
 
 export const exportsRouter = new Hono();
@@ -23,7 +23,10 @@ exportsRouter.get("/:jobId/editions", async (c) => {
   }
 
   const files = fs.readdirSync(imgDir).filter((f) => f.endsWith(".png"));
-  const editions = files.map((f) => parseInt(path.basename(f, ".png"), 10)).filter((n) => !isNaN(n)).sort((a, b) => a - b);
+  const editions = files
+    .map((f) => Number.parseInt(path.basename(f, ".png"), 10))
+    .filter((n) => !Number.isNaN(n))
+    .sort((a, b) => a - b);
   return c.json(editions);
 });
 

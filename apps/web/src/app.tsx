@@ -1,10 +1,7 @@
-import { createBrowserRouter, RouterProvider } from "react-router";
-import {
-  DashboardPage,
-  loader as dashboardLoader,
-} from "@/pages/dashboard";
-import { ProjectPage, loader as projectLoader } from "@/pages/project";
 import { AuthPage } from "@/pages/auth";
+import { DashboardPage, loader as dashboardLoader } from "@/pages/dashboard";
+import { ProjectPage, loader as projectLoader } from "@/pages/project";
+import { RouterProvider, createBrowserRouter } from "react-router";
 
 const router = createBrowserRouter([
   {
@@ -26,4 +23,3 @@ const router = createBrowserRouter([
 export function App() {
   return <RouterProvider router={router} />;
 }
-

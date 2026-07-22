@@ -1,6 +1,6 @@
+import { type Element, type Layer, api } from "@/lib/api";
+import { Layers, RefreshCw, Shuffle, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Shuffle, Sparkles, RefreshCw, Layers } from "lucide-react";
-import { type Layer, type Element, api } from "@/lib/api";
 
 interface NFTCompositorProps {
   layers: Layer[];
@@ -162,8 +162,9 @@ export function NFTCompositor({
         if (loadedCount === selectedTraits.length) {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           images.forEach((item) => {
-            if (item && item.img) {
-              ctx.globalCompositeOperation = (item.blendMode || "source-over") as GlobalCompositeOperation;
+            if (item?.img) {
+              ctx.globalCompositeOperation = (item.blendMode ||
+                "source-over") as GlobalCompositeOperation;
               ctx.drawImage(item.img, 0, 0, canvas.width, canvas.height);
             }
           });
@@ -226,7 +227,9 @@ export function NFTCompositor({
                 key={idx}
                 className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] text-slate-700 dark:text-slate-300 font-mono flex items-center gap-1"
               >
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold">{t.layerName}:</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+                  {t.layerName}:
+                </span>
                 <span className="truncate max-w-[90px]">
                   {t.filename.replace(/^.*?_/, "").replace(/\.[^/.]+$/, "")}
                 </span>

@@ -1,28 +1,18 @@
+import { constructLayerToDna, createDna, filterDNAOptions, isDnaUnique } from "./dna.js";
+import type { SelectedElement } from "./dna.js";
+import { HashLipsGiffer } from "./giffer.js";
 import type { LayerOrderEntry } from "./layer-loader.js";
 import { layersSetup } from "./layer-loader.js";
-import {
-  createDna,
-  isDnaUnique,
-  filterDNAOptions,
-  constructLayerToDna,
-} from "./dna.js";
-import type { SelectedElement } from "./dna.js";
+import { buildAttributes, buildMetadata } from "./metadata.js";
+import type { Attribute, MetadataConfig } from "./metadata.js";
 import {
   createRenderCanvas,
   drawBackground,
-  loadLayerImg,
   drawElement,
+  loadLayerImg,
   saveImage,
 } from "./renderer.js";
-import type {
-  RenderConfig,
-  BackgroundConfig,
-  GifConfig,
-  LayerRenderObject,
-} from "./renderer.js";
-import { buildAttributes, buildMetadata } from "./metadata.js";
-import type { MetadataConfig, Attribute } from "./metadata.js";
-import { HashLipsGiffer } from "./giffer.js";
+import type { BackgroundConfig, GifConfig, LayerRenderObject, RenderConfig } from "./renderer.js";
 
 export interface GenerationConfig {
   render: RenderConfig;
@@ -67,8 +57,7 @@ export async function generate(
   dnaList: string[];
 }> {
   const { canvas, ctx } = createRenderCanvas(config.render);
-  const lastConfig =
-    config.layerConfigurations[config.layerConfigurations.length - 1];
+  const lastConfig = config.layerConfigurations[config.layerConfigurations.length - 1];
   if (!lastConfig) {
     throw new Error("No layer configurations provided");
   }
@@ -120,12 +109,7 @@ export async function generate(
         }
 
         if (config.background.generate) {
-          drawBackground(
-            ctx,
-            config.background,
-            config.render.width,
-            config.render.height,
-          );
+          drawBackground(ctx, config.background, config.render.width, config.render.height);
         }
 
         for (const renderObject of renderObjects) {
@@ -151,12 +135,7 @@ export async function generate(
           selectedElement: { name: s.selectedElement.name },
         }));
         const attributes: Attribute[] = buildAttributes(selectionsWithElement);
-        const meta = buildMetadata(
-          newDna,
-          editionIndex,
-          attributes,
-          config.metadata,
-        );
+        const meta = buildMetadata(newDna, editionIndex, attributes, config.metadata);
         metadataList.push(meta);
 
         const fs = await import("node:fs");

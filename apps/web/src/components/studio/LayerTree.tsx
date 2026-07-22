@@ -1,6 +1,17 @@
-import { useState } from "react";
-import { Plus, Trash2, ArrowUp, ArrowDown, Layers as LayersIcon, AlertCircle, Sparkles, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
 import { type Layer, api } from "@/lib/api";
+import {
+  AlertCircle,
+  ArrowDown,
+  ArrowUp,
+  ChevronDown,
+  ChevronUp,
+  GripVertical,
+  Layers as LayersIcon,
+  Plus,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import { useState } from "react";
 
 const BLEND_MODES = [
   "source-over",
@@ -141,7 +152,9 @@ export function LayerTree({
       <div className="p-2.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/80 dark:bg-slate-900/80 shrink-0">
         <div className="flex items-center gap-1.5 min-w-0">
           <LayersIcon className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">Layers</h3>
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
+            Layers
+          </h3>
           <span className="text-[10px] font-mono px-1 py-0.2 rounded bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 font-semibold border border-indigo-200 dark:border-indigo-800/80 shrink-0">
             {layers.length}
           </span>
@@ -258,7 +271,9 @@ export function LayerTree({
                 className={`p-1.5 rounded border cursor-grab active:cursor-grabbing transition-all ${
                   isDragging ? "opacity-30 border-dashed border-indigo-500" : ""
                 } ${
-                  isDragOver ? "border-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40" : ""
+                  isDragOver
+                    ? "border-2 border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40"
+                    : ""
                 } ${
                   isSelected && !isDragging
                     ? "bg-indigo-50 dark:bg-slate-800 border-indigo-400 dark:border-indigo-500 text-slate-900 dark:text-white"
@@ -275,7 +290,10 @@ export function LayerTree({
                   </div>
 
                   {/* Compact Blend Dropdown & Action Controls (shrink-0) */}
-                  <div className="flex items-center gap-0.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                  <div
+                    className="flex items-center gap-0.5 shrink-0"
+                    onClick={(e) => e.stopPropagation()}
+                  >
                     <select
                       value={layer.blendMode || "source-over"}
                       onChange={(e) => handleBlendChange(layer.id, e.target.value)}

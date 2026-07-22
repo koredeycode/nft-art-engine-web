@@ -32,10 +32,7 @@ export function createDna(layers: LayerConfig[]): string {
   const randNum: string[] = [];
 
   for (const layer of layers) {
-    const totalWeight = layer.elements.reduce(
-      (sum, el) => sum + el.weight,
-      0,
-    );
+    const totalWeight = layer.elements.reduce((sum, el) => sum + el.weight, 0);
     let random = Math.floor(Math.random() * totalWeight);
 
     for (const element of layer.elements) {
@@ -59,10 +56,7 @@ export interface SelectedElement {
   selectedElement: ElementFile;
 }
 
-export function constructLayerToDna(
-  dna: string,
-  layers: LayerConfig[],
-): SelectedElement[] {
+export function constructLayerToDna(dna: string, layers: LayerConfig[]): SelectedElement[] {
   const dnaParts = dna.split(DNA_DELIMITER);
 
   return layers.map((layer, index) => {
@@ -73,9 +67,14 @@ export function constructLayerToDna(
       name: layer.name,
       blend: layer.blend,
       opacity: layer.opacity,
-      selectedElement: element ?? layer.elements[0] ?? {
-        id: 0, name: "", filename: "", path: "", weight: 1,
-      },
+      selectedElement: element ??
+        layer.elements[0] ?? {
+          id: 0,
+          name: "",
+          filename: "",
+          path: "",
+          weight: 1,
+        },
     };
   });
 }

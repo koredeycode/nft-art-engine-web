@@ -28,10 +28,7 @@ export interface LayerOrderEntry {
   };
 }
 
-export function getRarityWeight(
-  filename: string,
-  delimiter: string,
-): number {
+export function getRarityWeight(filename: string, delimiter: string): number {
   const withoutExtension = filename.slice(0, -4);
   const weight = Number(withoutExtension.split(delimiter).pop());
   return Number.isNaN(weight) ? 1 : weight;
@@ -42,19 +39,14 @@ export function cleanName(filename: string, delimiter: string): string {
   return withoutExtension.split(delimiter).shift() ?? "";
 }
 
-export function getElements(
-  dirPath: string,
-  delimiter: string,
-): ElementFile[] {
+export function getElements(dirPath: string, delimiter: string): ElementFile[] {
   const items = fs.readdirSync(dirPath).filter((item) => {
     return !/(^|\/)\.[^\/\.]/g.test(item);
   });
 
   return items.map((item, index) => {
     if (item.includes("-")) {
-      throw new Error(
-        `layer name cannot contain dashes, please fix: ${item}`,
-      );
+      throw new Error(`layer name cannot contain dashes, please fix: ${item}`);
     }
     return {
       id: index,

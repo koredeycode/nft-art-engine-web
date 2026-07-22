@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { Play, CheckCircle2, AlertCircle, RefreshCw, Cpu } from "lucide-react";
-import { api, type GenerationJob } from "@/lib/api";
+import { type GenerationJob, api } from "@/lib/api";
+import { AlertCircle, CheckCircle2, Cpu, Play, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface GeneratorHubProps {
   projectId: string;
@@ -60,7 +60,9 @@ export function GeneratorHub({ projectId, onGenerationComplete }: GeneratorHubPr
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
           <Cpu className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm tracking-tight">Generation Engine</h3>
+          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-sm tracking-tight">
+            Generation Engine
+          </h3>
         </div>
         <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-semibold border border-emerald-200 dark:border-emerald-800/80 flex items-center gap-1">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -79,12 +81,12 @@ export function GeneratorHub({ projectId, onGenerationComplete }: GeneratorHubPr
               min="1"
               max="10000"
               value={totalEditions}
-              onChange={(e) => setTotalEditions(parseInt(e.target.value, 10) || 1)}
+              onChange={(e) => setTotalEditions(Number.parseInt(e.target.value, 10) || 1)}
               className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:border-indigo-500"
             />
             <button
               type="submit"
-              disabled={loading || (activeJob?.status === "running")}
+              disabled={loading || activeJob?.status === "running"}
               className="px-4 py-2 sleek-button rounded-lg text-xs font-semibold flex items-center gap-1.5 shrink-0"
             >
               <Play className="w-3.5 h-3.5 fill-white" />
@@ -106,10 +108,19 @@ export function GeneratorHub({ projectId, onGenerationComplete }: GeneratorHubPr
         <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
           <div className="flex items-center justify-between text-xs font-medium">
             <span className="text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-              {activeJob.status === "running" && <RefreshCw className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-spin" />}
-              {activeJob.status === "completed" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
-              {activeJob.status === "failed" && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
-              Status: <strong className="capitalize text-slate-900 dark:text-white">{activeJob.status}</strong>
+              {activeJob.status === "running" && (
+                <RefreshCw className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 animate-spin" />
+              )}
+              {activeJob.status === "completed" && (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              )}
+              {activeJob.status === "failed" && (
+                <AlertCircle className="w-3.5 h-3.5 text-red-500" />
+              )}
+              Status:{" "}
+              <strong className="capitalize text-slate-900 dark:text-white">
+                {activeJob.status}
+              </strong>
             </span>
             <span className="text-slate-500 font-mono text-[11px]">
               {activeJob.currentEdition} / {activeJob.totalEditions} ({activeJob.progress}%)

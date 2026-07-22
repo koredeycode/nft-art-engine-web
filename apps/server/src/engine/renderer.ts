@@ -1,5 +1,5 @@
-import { createCanvas, loadImage } from "@napi-rs/canvas";
 import fs from "node:fs";
+import { createCanvas, loadImage } from "@napi-rs/canvas";
 import type { Canvas, SKRSContext2D as CanvasRenderingContext2D, Image } from "@napi-rs/canvas";
 import type { SelectedElement } from "./dna.js";
 import type { ElementFile } from "./layer-loader.js";
@@ -47,9 +47,7 @@ export interface LayerRenderObject {
   loadedImage: Image;
 }
 
-export async function loadLayerImg(
-  layer: SelectedElement,
-): Promise<LayerRenderObject> {
+export async function loadLayerImg(layer: SelectedElement): Promise<LayerRenderObject> {
   const image = await loadImage(layer.selectedElement.path);
   return { layer, loadedImage: image };
 }
@@ -61,15 +59,11 @@ export function drawElement(
   height: number,
 ): void {
   ctx.globalAlpha = renderObject.layer.opacity;
-  (ctx as { globalCompositeOperation: string }).globalCompositeOperation =
-    renderObject.layer.blend;
+  (ctx as { globalCompositeOperation: string }).globalCompositeOperation = renderObject.layer.blend;
   ctx.drawImage(renderObject.loadedImage, 0, 0, width, height);
 }
 
-export function saveImage(
-  canvas: Canvas,
-  outputPath: string,
-): void {
+export function saveImage(canvas: Canvas, outputPath: string): void {
   const buffer = canvas.toBuffer("image/png");
   fs.writeFileSync(outputPath, buffer);
 }

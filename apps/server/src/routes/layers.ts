@@ -1,17 +1,17 @@
-import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
-import {
-  createLayerSchema,
-  updateLayerSchema,
-  reorderLayersSchema,
-  updateElementWeightSchema,
-} from "@nft-engine/shared";
-import { db } from "../db/index.js";
-import { layers, elements } from "../db/schema.js";
-import { eq } from "drizzle-orm";
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
+import { zValidator } from "@hono/zod-validator";
+import {
+  createLayerSchema,
+  reorderLayersSchema,
+  updateElementWeightSchema,
+  updateLayerSchema,
+} from "@nft-engine/shared";
+import { eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { db } from "../db/index.js";
+import { elements, layers } from "../db/schema.js";
 
 const UPLOADS_DIR = process.env.UPLOADS_DIR ?? "./data/uploads";
 
@@ -28,31 +28,27 @@ layersRouter.get("/project/:projectId", async (c) => {
   return c.json(result);
 });
 
-layersRouter.post(
-  "/project/:projectId",
-  zValidator("json", createLayerSchema),
-  async (c) => {
-    const projectId = c.req.param("projectId");
-    const data = c.req.valid("json");
-    const now = new Date();
-    const existingLayers = await db
-      .select()
-      .from(layers)
-      .where(eq(layers.projectId, projectId))
-      .all();
-    const layer = {
-      id: crypto.randomUUID(),
-      projectId,
-      name: data.name,
-      blendMode: data.blendMode ?? "source-over",
-      order: existingLayers.length,
-      createdAt: now,
-      updatedAt: now,
-    };
-    await db.insert(layers).values(layer).run();
-    return c.json(layer, 201);
-  },
-);
+layersRouter.post("/project/:projectId", zValidator("json", createLayerSchema), async (c) => {
+  const projectId = c.req.param("projectId");
+  const data = c.req.valid("json");
+  const now = new Date();
+  const existingLayers = await db
+    .select()
+    .from(layers)
+    .where(eq(layers.projectId, projectId))
+    .all();
+  const layer = {
+    id: crypto.randomUUID(),
+    projectId,
+    name: data.name,
+    blendMode: data.blendMode ?? "source-over",
+    order: existingLayers.length,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await db.insert(layers).values(layer).run();
+  return c.json(layer, 201);
+});
 
 layersRouter.patch(
   "/project/:projectId/reorder",
@@ -70,33 +66,21 @@ layersRouter.patch(
   },
 );
 
-layersRouter.patch(
-  "/:id",
-  zValidator("json", updateLayerSchema),
-  async (c) => {
-    const id = c.req.param("id");
-    const data = c.req.valid("json");
-    await db
-      .update(layers)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(layers.id, id))
-      .run();
-    const updated = await db
-      .select()
-      .from(layers)
-      .where(eq(layers.id, id))
-      .get();
-    return c.json(updated);
-  },
-);
+layersRouter.patch("/:id", zValidator("json", updateLayerSchema), async (c) => {
+  const id = c.req.param("id");
+  const data = c.req.valid("json");
+  await db
+    .update(layers)
+    .set({ ...data, updatedAt: new Date() })
+    .where(eq(layers.id, id))
+    .run();
+  const updated = await db.select().from(layers).where(eq(layers.id, id)).get();
+  return c.json(updated);
+});
 
 layersRouter.delete("/:id", async (c) => {
   const id = c.req.param("id");
-  const layerElements = await db
-    .select()
-    .from(elements)
-    .where(eq(elements.layerId, id))
-    .all();
+  const layerElements = await db.select().from(elements).where(eq(elements.layerId, id)).all();
 
   for (const el of layerElements) {
     const filePath = path.join(UPLOADS_DIR, el.filename);
@@ -116,28 +100,25 @@ layersRouter.delete("/:id", async (c) => {
 
 layersRouter.get("/:layerId/elements", async (c) => {
   const layerId = c.req.param("layerId");
-  const result = await db
-    .select()
-    .from(elements)
-    .where(eq(elements.layerId, layerId))
-    .all();
+  const result = await db.select().from(elements).where(eq(elements.layerId, layerId)).all();
   return c.json(result);
 });
 
 layersRouter.post("/:layerId/elements", async (c) => {
   const layerId = c.req.param("layerId");
-  const layer = await db
-    .select()
-    .from(layers)
-    .where(eq(layers.id, layerId))
-    .get();
+  const layer = await db.select().from(layers).where(eq(layers.id, layerId)).get();
   if (!layer) return c.json({ error: "Layer not found" }, 404);
 
   const body = await c.req.parseBody();
-  const file = body["file"];
-  const weight = Number(body["weight"] ?? 1);
+  const file = body.file;
+  const weight = Number(body.weight ?? 1);
 
-  if (!file || typeof file === "string" || Array.isArray(file) || typeof file.arrayBuffer !== "function") {
+  if (
+    !file ||
+    typeof file === "string" ||
+    Array.isArray(file) ||
+    typeof file.arrayBuffer !== "function"
+  ) {
     return c.json({ error: "Image file is required" }, 400);
   }
 
@@ -170,11 +151,7 @@ layersRouter.post("/:layerId/elements", async (c) => {
 
 layersRouter.get("/elements/:elementId/file", async (c) => {
   const elementId = c.req.param("elementId");
-  const el = await db
-    .select()
-    .from(elements)
-    .where(eq(elements.id, elementId))
-    .get();
+  const el = await db.select().from(elements).where(eq(elements.id, elementId)).get();
   if (!el) return c.json({ error: "Element not found" }, 404);
 
   const filePath = path.join(UPLOADS_DIR, el.filename);
@@ -195,22 +172,14 @@ layersRouter.patch(
   async (c) => {
     const elementId = c.req.param("elementId");
     const data = c.req.valid("json");
-    await db
-      .update(elements)
-      .set({ weight: data.weight })
-      .where(eq(elements.id, elementId))
-      .run();
+    await db.update(elements).set({ weight: data.weight }).where(eq(elements.id, elementId)).run();
     return c.json({ ok: true });
   },
 );
 
 layersRouter.delete("/elements/:elementId", async (c) => {
   const elementId = c.req.param("elementId");
-  const el = await db
-    .select()
-    .from(elements)
-    .where(eq(elements.id, elementId))
-    .get();
+  const el = await db.select().from(elements).where(eq(elements.id, elementId)).get();
   if (el) {
     const filePath = path.join(UPLOADS_DIR, el.filename);
     if (fs.existsSync(filePath)) {
@@ -224,4 +193,3 @@ layersRouter.delete("/elements/:elementId", async (c) => {
   }
   return c.json({ ok: true });
 });
-

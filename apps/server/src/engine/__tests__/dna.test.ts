@@ -1,11 +1,11 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import {
+  DNA_DELIMITER,
   cleanDna,
+  constructLayerToDna,
+  createDna,
   filterDNAOptions,
   isDnaUnique,
-  createDna,
-  constructLayerToDna,
-  DNA_DELIMITER,
 } from "../dna.js";
 import type { LayerConfig } from "../layer-loader.js";
 

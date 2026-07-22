@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { getRarityWeight, cleanName } from "../layer-loader.js";
+import { describe, expect, it } from "vitest";
+import { cleanName, getRarityWeight } from "../layer-loader.js";
 
 describe("getRarityWeight", () => {
   it("extracts weight from filename with delimiter", () => {

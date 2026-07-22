@@ -1,18 +1,18 @@
-import { Hono } from "hono";
-import { serve } from "@hono/node-server";
-import { cors } from "hono/cors";
-import type { Server } from "node:http";
 import fs from "node:fs";
+import type { Server } from "node:http";
 import path from "node:path";
-import { projectsRouter } from "./routes/projects.js";
-import { layersRouter } from "./routes/layers.js";
-import { generationRouter } from "./routes/generation.js";
-import { exportsRouter } from "./routes/exports.js";
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { runMigrations } from "./db/migrate.js";
 import { auth } from "./lib/auth.js";
 import { logger } from "./lib/logger.js";
 import { initTelemetry } from "./lib/observability.js";
 import { initWebSocket } from "./lib/ws.js";
-import { runMigrations } from "./db/migrate.js";
+import { exportsRouter } from "./routes/exports.js";
+import { generationRouter } from "./routes/generation.js";
+import { layersRouter } from "./routes/layers.js";
+import { projectsRouter } from "./routes/projects.js";
 
 initTelemetry();
 
@@ -39,10 +39,13 @@ app.get("/api/uploads/:filename", async (c) => {
   const buffer = fs.readFileSync(filePath);
   const ext = path.extname(filename).toLowerCase();
   const mime =
-    ext === ".png" ? "image/png" :
-    ext === ".jpg" || ext === ".jpeg" ? "image/jpeg" :
-    ext === ".gif" ? "image/gif" :
-    "application/octet-stream";
+    ext === ".png"
+      ? "image/png"
+      : ext === ".jpg" || ext === ".jpeg"
+        ? "image/jpeg"
+        : ext === ".gif"
+          ? "image/gif"
+          : "application/octet-stream";
   return c.newResponse(buffer, { headers: { "Content-Type": mime } });
 });
 

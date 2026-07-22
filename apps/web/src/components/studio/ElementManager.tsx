@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { UploadCloud, Image as ImageIcon, Trash2, Eye, Check } from "lucide-react";
-import { type Layer, type Element, api } from "@/lib/api";
+import { type Element, type Layer, api } from "@/lib/api";
+import { Check, Eye, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface ElementManagerProps {
   layer: Layer | null;
@@ -35,9 +35,8 @@ export function ElementManager({
       setElements(data);
     } catch {
       setElements([]);
-    } flex: {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   const handleUploadFiles = async (files: FileList | File[]) => {
@@ -58,9 +57,7 @@ export function ElementManager({
   };
 
   const handleWeightChange = async (elementId: string, weight: number) => {
-    setElements((prev) =>
-      prev.map((el) => (el.id === elementId ? { ...el, weight } : el))
-    );
+    setElements((prev) => prev.map((el) => (el.id === elementId ? { ...el, weight } : el)));
     try {
       await api.patch(`/layers/elements/${elementId}/weight`, { weight });
       onRefresh();
@@ -83,7 +80,9 @@ export function ElementManager({
     return (
       <div className="studio-panel p-6 flex flex-col items-center justify-center h-full text-center border-r border-slate-200 dark:border-slate-800">
         <ImageIcon className="w-8 h-8 text-slate-300 dark:text-slate-700 mb-2" />
-        <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-xs">No Layer Selected</h3>
+        <h3 className="font-semibold text-slate-700 dark:text-slate-300 text-xs">
+          No Layer Selected
+        </h3>
         <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 max-w-xs">
           Select a layer from the panel on the left to upload & inspect trait elements.
         </p>
@@ -101,7 +100,9 @@ export function ElementManager({
             <span className="truncate">{layer.name}</span>
             <span className="text-[10px] text-slate-400 font-normal shrink-0">Traits</span>
           </h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">PNG uploads & rarity weights</p>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+            PNG uploads & rarity weights
+          </p>
         </div>
         <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold border border-purple-200 dark:border-purple-800 shrink-0">
           {elements.length} Items
@@ -182,7 +183,10 @@ export function ElementManager({
                     </div>
 
                     <div className="flex flex-col min-w-0 flex-1">
-                      <span className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate" title={cleanName}>
+                      <span
+                        className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate"
+                        title={cleanName}
+                      >
                         {cleanName}
                       </span>
                       <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-semibold">
@@ -201,7 +205,11 @@ export function ElementManager({
                       }`}
                       title="Set as active canvas preview trait"
                     >
-                      {isActive ? <Check className="w-3 h-3 text-white" /> : <Eye className="w-3 h-3" />}
+                      {isActive ? (
+                        <Check className="w-3 h-3 text-white" />
+                      ) : (
+                        <Eye className="w-3 h-3" />
+                      )}
                     </button>
                     <button
                       onClick={() => handleDeleteElement(el.id)}
@@ -221,7 +229,7 @@ export function ElementManager({
                     min="0"
                     max="100"
                     value={el.weight}
-                    onChange={(e) => handleWeightChange(el.id, parseInt(e.target.value, 10))}
+                    onChange={(e) => handleWeightChange(el.id, Number.parseInt(e.target.value, 10))}
                     className="flex-1 h-1 bg-slate-200 dark:bg-slate-800 rounded appearance-none cursor-pointer accent-indigo-600"
                   />
                 </div>

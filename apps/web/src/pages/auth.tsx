@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams, Link } from "react-router";
-import { Sparkles, Mail, Lock, User, ArrowRight, AlertCircle, Shield } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
+import { AlertCircle, ArrowRight, Lock, Mail, Shield, Sparkles, User } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
 export function AuthPage() {
   const [searchParams] = useSearchParams();

@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { buildAttributes, buildMetadata, sha1 } from "../metadata.js";
 import type { MetadataConfig } from "../metadata.js";
 

@@ -27,4 +27,3 @@ export type CreateLayerInput = z.infer<typeof createLayerSchema>;
 export type UpdateLayerInput = z.infer<typeof updateLayerSchema>;
 export type ReorderLayersInput = z.infer<typeof reorderLayersSchema>;
 export type UpdateElementWeightInput = z.infer<typeof updateElementWeightSchema>;
-

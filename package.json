@@ -3,10 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.29.2",
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "canvas",
-      "@biomejs/biome"
-    ]
+    "onlyBuiltDependencies": ["canvas", "@biomejs/biome"]
   },
   "scripts": {
     "dev": "turbo dev",

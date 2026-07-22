@@ -45,7 +45,8 @@ export const api = {
 
   // Helper image URL generators
   getElementImageUrl: (elementId: string) => `${BASE_URL}/layers/elements/${elementId}/file`,
-  getOutputImageUrl: (jobId: string, edition: number) => `${BASE_URL}/exports/${jobId}/image/${edition}`,
+  getOutputImageUrl: (jobId: string, edition: number) =>
+    `${BASE_URL}/exports/${jobId}/image/${edition}`,
 };
 
 export interface Project {

@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { useLoaderData, useRevalidator, Link, useNavigate } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
-import { Plus, Search, Layers, Sparkles, Trash2, ArrowRight, X, Layers3 } from "lucide-react";
-import { api, type Project } from "@/lib/api";
 import { Navbar } from "@/components/Navbar";
+import { type Project, api } from "@/lib/api";
+import { ArrowRight, Layers, Layers3, Plus, Search, Sparkles, Trash2, X } from "lucide-react";
+import { useState } from "react";
+import { Link, useLoaderData, useNavigate, useRevalidator } from "react-router";
+import type { LoaderFunctionArgs } from "react-router";
 
 export async function loader(_args: LoaderFunctionArgs) {
   const projects = await api.get<Project[]>("/projects");
@@ -71,7 +71,7 @@ export function DashboardPage() {
   };
 
   const filteredProjects = projects.filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalLayers = projects.reduce((acc, p) => acc + (p.layerCount || 0), 0);
@@ -94,7 +94,8 @@ export function DashboardPage() {
                 Generative NFT Collections
               </h1>
               <p className="mt-1 text-slate-500 dark:text-slate-400 text-xs sm:text-sm max-w-xl">
-                Build layered artwork traits, configure rarity weighting, preview composite combinations live in the center stage, and generate production NFT metadata.
+                Build layered artwork traits, configure rarity weighting, preview composite
+                combinations live in the center stage, and generate production NFT metadata.
               </p>
             </div>
 
@@ -111,15 +112,21 @@ export function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-slate-200 dark:border-slate-800">
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
               <div className="text-[11px] text-slate-500 font-medium">Total Collections</div>
-              <div className="text-xl font-bold text-slate-900 dark:text-white mt-0.5 font-mono">{projects.length}</div>
+              <div className="text-xl font-bold text-slate-900 dark:text-white mt-0.5 font-mono">
+                {projects.length}
+              </div>
             </div>
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800">
               <div className="text-[11px] text-slate-500 font-medium">Configured Layers</div>
-              <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono">{totalLayers}</div>
+              <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 font-mono">
+                {totalLayers}
+              </div>
             </div>
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200/80 dark:border-slate-800 col-span-2 sm:col-span-1">
               <div className="text-[11px] text-slate-500 font-medium">Uploaded Traits</div>
-              <div className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-0.5 font-mono">{totalElements}</div>
+              <div className="text-xl font-bold text-purple-600 dark:text-purple-400 mt-0.5 font-mono">
+                {totalElements}
+              </div>
             </div>
           </div>
         </div>
@@ -127,8 +134,12 @@ export function DashboardPage() {
         {/* Section Header & Search */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Your Collections</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Select a project to open the Layer Studio & Compositor</p>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Your Collections
+            </h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Select a project to open the Layer Studio & Compositor
+            </p>
           </div>
 
           <div className="relative w-full sm:w-64">
@@ -149,9 +160,13 @@ export function DashboardPage() {
             <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 mx-auto mb-3">
               <Layers3 className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">No Projects Found</h3>
+            <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">
+              No Projects Found
+            </h3>
             <p className="text-slate-500 dark:text-slate-400 text-xs max-w-xs mx-auto mt-1 mb-4">
-              {searchQuery ? "No collections match your search." : "Create your first NFT collection to get started."}
+              {searchQuery
+                ? "No collections match your search."
+                : "Create your first NFT collection to get started."}
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
@@ -227,8 +242,12 @@ export function DashboardPage() {
               <X className="w-4 h-4" />
             </button>
 
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-0.5">Create Collection</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">Initialize a new generative NFT collection project</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight mb-0.5">
+              Create Collection
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-5">
+              Initialize a new generative NFT collection project
+            </p>
 
             {error && (
               <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800/80 rounded-xl text-red-600 dark:text-red-300 text-xs">
@@ -273,7 +292,7 @@ export function DashboardPage() {
                   <select
                     value={canvasWidth}
                     onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
+                      const val = Number.parseInt(e.target.value, 10);
                       setCanvasWidth(val);
                       setCanvasHeight(val);
                     }}

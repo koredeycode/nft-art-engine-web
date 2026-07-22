@@ -1,5 +1,5 @@
-import { WebSocketServer } from "ws";
 import type { Server } from "node:http";
+import { WebSocketServer } from "ws";
 
 let wss: WebSocketServer;
 
@@ -32,10 +32,7 @@ export function broadcastJobProgress(
   if (!wss) return;
   const message = JSON.stringify({ jobId, status, progress, currentEdition, totalEditions });
   wss.clients.forEach((client) => {
-    if (
-      client.readyState === 1 &&
-      (client as { jobId?: string }).jobId === jobId
-    ) {
+    if (client.readyState === 1 && (client as { jobId?: string }).jobId === jobId) {
       client.send(message);
     }
   });
