@@ -1,5 +1,5 @@
 import { type Element, type Layer, api } from "@/lib/api";
-import { Layers, RefreshCw, Shuffle, Sparkles } from "lucide-react";
+import { Eraser, Layers, RefreshCw, Shuffle, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface NFTCompositorProps {
@@ -68,6 +68,17 @@ export function NFTCompositor({
     }
   };
 
+  const clearCanvas = () => {
+    setSelectedTraits([]);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  };
+
   // When layers change (order or count), keep existing selected traits in the new layer order
   useEffect(() => {
     if (layers.length === 0) {
@@ -75,10 +86,8 @@ export function NFTCompositor({
       return;
     }
 
-    // Re-align selectedTraits with the current layer order and blend modes
     setSelectedTraits((prev) => {
       if (prev.length === 0) {
-        randomizeCombination();
         return prev;
       }
       const newTraits: SelectedTrait[] = [];
@@ -92,7 +101,7 @@ export function NFTCompositor({
           });
         }
       }
-      return newTraits.length > 0 ? newTraits : prev;
+      return newTraits;
     });
   }, [layers]);
 
@@ -138,12 +147,14 @@ export function NFTCompositor({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     if (selectedTraits.length === 0) {
-      ctx.fillStyle = "#cbd5e1";
+      ctx.fillStyle = "#f1f5f9";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#64748b";
+      ctx.fillStyle = "#94a3b8";
       ctx.font = "14px sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText("Upload traits & click Randomize", canvas.width / 2, canvas.height / 2);
+      ctx.fillText("Blank Canvas", canvas.width / 2, canvas.height / 2 - 10);
+      ctx.font = "12px sans-serif";
+      ctx.fillText("Select a trait element or click Randomize", canvas.width / 2, canvas.height / 2 + 15);
       return;
     }
 
@@ -184,28 +195,40 @@ export function NFTCompositor({
           </h3>
         </div>
 
-        <button
-          onClick={randomizeCombination}
-          disabled={rendering || layers.length === 0}
-          className="sleek-button px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1"
-        >
-          <Shuffle className={`w-3.5 h-3.5 ${rendering ? "animate-spin" : ""}`} />
-          <span>Randomize Traits</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={clearCanvas}
+            disabled={selectedTraits.length === 0}
+            className="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 text-xs font-semibold flex items-center gap-1 transition-colors"
+            title="Clear canvas to blank"
+          >
+            <Eraser className="w-3.5 h-3.5" />
+            <span>Clear Canvas</span>
+          </button>
+
+          <button
+            onClick={randomizeCombination}
+            disabled={rendering || layers.length === 0}
+            className="sleek-button px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 shadow-xs"
+          >
+            <Shuffle className={`w-3.5 h-3.5 ${rendering ? "animate-spin" : ""}`} />
+            <span>Randomize Traits</span>
+          </button>
+        </div>
       </div>
 
-      {/* Figma / Canva Artboard Stage Center */}
+      {/* Artboard Stage Center */}
       <div className="studio-canvas-stage w-full aspect-square max-w-[360px] p-3 flex flex-col items-center justify-center my-auto relative shadow-sm">
-        <div className="relative w-full h-full max-w-[320px] max-h-[320px] bg-white dark:bg-slate-900 shadow-md border border-slate-200 dark:border-slate-800 p-2 flex items-center justify-center overflow-hidden">
+        <div className="relative w-full h-full max-w-[320px] max-h-[320px] bg-white dark:bg-slate-900 shadow-md border border-slate-200 dark:border-slate-800 p-2 flex items-center justify-center overflow-hidden rounded-xl">
           <canvas
             ref={canvasRef}
             width={512}
             height={512}
-            className="w-full h-full object-contain"
+            className="w-full h-full object-contain rounded-lg"
           />
 
           {rendering && (
-            <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xs flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/70 dark:bg-slate-950/70 backdrop-blur-xs flex items-center justify-center rounded-xl">
               <RefreshCw className="w-7 h-7 text-indigo-600 dark:text-indigo-400 animate-spin" />
             </div>
           )}
@@ -220,12 +243,12 @@ export function NFTCompositor({
         </div>
         <div className="flex flex-wrap gap-1 max-h-16 overflow-y-auto">
           {selectedTraits.length === 0 ? (
-            <span className="text-xs text-slate-400 italic">No active traits</span>
+            <span className="text-xs text-slate-400 italic">Canvas is blank</span>
           ) : (
             selectedTraits.map((t, idx) => (
               <span
                 key={idx}
-                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded text-[10px] text-slate-700 dark:text-slate-300 font-mono flex items-center gap-1"
+                className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[10px] text-slate-700 dark:text-slate-300 font-mono flex items-center gap-1"
               >
                 <span className="text-indigo-600 dark:text-indigo-400 font-bold">
                   {t.layerName}:

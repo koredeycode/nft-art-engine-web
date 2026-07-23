@@ -1,18 +1,46 @@
 import { type Element, type Layer, api } from "@/lib/api";
-import { Check, Eye, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  Check,
+  Eye,
+  Image as ImageIcon,
+  Sliders,
+  Trash2,
+  UploadCloud,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+
+const BLEND_MODES = [
+  "source-over",
+  "multiply",
+  "screen",
+  "overlay",
+  "darken",
+  "lighten",
+  "color-dodge",
+  "color-burn",
+  "hard-light",
+  "soft-light",
+  "difference",
+  "exclusion",
+];
 
 interface ElementManagerProps {
   layer: Layer | null;
+  layers?: Layer[];
   activeElementId?: string | null | undefined;
   onSelectElementForPreview?: (elementId: string) => void;
+  onLayerDeleted?: (layerId: string) => void;
   onRefresh: () => void;
 }
 
 export function ElementManager({
   layer,
+  layers = [],
   activeElementId,
   onSelectElementForPreview,
+  onLayerDeleted,
   onRefresh,
 }: ElementManagerProps) {
   const [elements, setElements] = useState<Element[]>([]);
@@ -76,6 +104,51 @@ export function ElementManager({
     }
   };
 
+  const handleBlendChange = async (blendMode: string) => {
+    if (!layer) return;
+    try {
+      await api.patch(`/layers/${layer.id}`, { blendMode });
+      onRefresh();
+    } catch {
+      alert("Failed to update blend mode");
+    }
+  };
+
+  const handleOrderChange = async (targetOrderIndex: number) => {
+    if (!layer || layers.length === 0) return;
+    const currentIndex = layers.findIndex((l) => l.id === layer.id);
+    if (currentIndex < 0 || currentIndex === targetOrderIndex) return;
+
+    const newLayers = [...layers];
+    const [moved] = newLayers.splice(currentIndex, 1);
+    if (!moved) return;
+    newLayers.splice(targetOrderIndex, 0, moved);
+
+    const reorderPayload = newLayers.map((l, i) => ({ id: l.id, order: i }));
+    try {
+      await api.patch(`/layers/project/${layer.projectId}/reorder`, {
+        layers: reorderPayload,
+      });
+      onRefresh();
+    } catch {
+      alert("Failed to reorder layer");
+    }
+  };
+
+  const handleDeleteLayer = async () => {
+    if (!layer) return;
+    if (!confirm(`Are you sure you want to delete layer "${layer.name}" and all its elements?`)) {
+      return;
+    }
+    try {
+      await api.delete(`/layers/${layer.id}`);
+      onLayerDeleted?.(layer.id);
+      onRefresh();
+    } catch {
+      alert("Failed to delete layer");
+    }
+  };
+
   if (!layer) {
     return (
       <div className="studio-panel p-6 flex flex-col items-center justify-center h-full text-center border-r border-slate-200 dark:border-slate-800">
@@ -84,32 +157,79 @@ export function ElementManager({
           No Layer Selected
         </h3>
         <p className="text-slate-400 dark:text-slate-500 text-[11px] mt-1 max-w-xs">
-          Select a layer from the panel on the left to upload & inspect trait elements.
+          Click a layer in the list to open its configuration & trait elements.
         </p>
       </div>
     );
   }
 
   const totalWeight = elements.reduce((acc, el) => acc + (el.weight || 1), 0);
+  const currentLayerIndex = layers.findIndex((l) => l.id === layer.id);
 
   return (
-    <div className="studio-panel p-3 flex flex-col h-full border-r border-slate-200 dark:border-slate-800 select-none">
-      <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-200 dark:border-slate-800 shrink-0">
-        <div className="min-w-0">
-          <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs flex items-center gap-1.5 truncate">
-            <span className="truncate">{layer.name}</span>
-            <span className="text-[10px] text-slate-400 font-normal shrink-0">Traits</span>
-          </h3>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-            PNG uploads & rarity weights
-          </p>
+    <div className="studio-panel p-4 flex flex-col h-full border-r border-slate-200 dark:border-slate-800 select-none bg-white dark:bg-slate-900">
+      {/* Header & Detail Configuration View */}
+      <div className="mb-4 pb-3 border-b border-slate-200 dark:border-slate-800 space-y-3 shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="min-w-0">
+            <h3 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 truncate">
+              {layer.name}
+            </h3>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+              {elements.length} elements • Total weight: {totalWeight}
+            </span>
+          </div>
+
+          <button
+            onClick={handleDeleteLayer}
+            className="p-1.5 rounded-lg bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900 border border-red-200 dark:border-red-800/80 transition-colors"
+            title="Delete Layer"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
-        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 font-semibold border border-purple-200 dark:border-purple-800 shrink-0">
-          {elements.length} Items
-        </span>
+
+        {/* Layer Controls: Blend Mode & Layer Ordering Dropdowns */}
+        <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-600 dark:text-slate-400 font-medium text-[11px]">
+              Blend Mode
+            </span>
+            <select
+              value={layer.blendMode || "source-over"}
+              onChange={(e) => handleBlendChange(e.target.value)}
+              className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-xs text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
+            >
+              {BLEND_MODES.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {layers.length > 1 && (
+            <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
+              <span className="text-slate-600 dark:text-slate-400 font-medium text-[11px]">
+                Layer Position
+              </span>
+              <select
+                value={currentLayerIndex >= 0 ? currentLayerIndex : 0}
+                onChange={(e) => handleOrderChange(Number.parseInt(e.target.value, 10))}
+                className="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-xs text-slate-800 dark:text-slate-200 font-mono focus:outline-none focus:border-indigo-500"
+              >
+                {layers.map((l, idx) => (
+                  <option key={l.id} value={idx}>
+                    #{idx + 1} ({l.name})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Upload Dropzone */}
+      {/* Upload Drag & Drop Zone */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -119,118 +239,112 @@ export function ElementManager({
         onDrop={(e) => {
           e.preventDefault();
           setDragActive(false);
-          if (e.dataTransfer.files?.length) {
-            handleUploadFiles(e.dataTransfer.files);
-          }
+          if (e.dataTransfer.files) handleUploadFiles(e.dataTransfer.files);
         }}
-        className={`border border-dashed rounded-lg p-2.5 text-center transition-all cursor-pointer mb-3 shrink-0 ${
+        className={`mb-3 p-3 border-2 border-dashed rounded-xl text-center transition-colors shrink-0 ${
           dragActive
-            ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30"
-            : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 hover:border-slate-300 dark:hover:border-slate-700"
+            ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40"
+            : "border-slate-200 dark:border-slate-800 hover:border-indigo-400 bg-slate-50/50 dark:bg-slate-950/50"
         }`}
       >
-        <input
-          type="file"
-          multiple
-          accept="image/png,image/jpeg,image/svg+xml"
-          onChange={(e) => {
-            if (e.target.files?.length) handleUploadFiles(e.target.files);
-          }}
-          className="hidden"
-          id="element-file-upload"
-        />
-        <label htmlFor="element-file-upload" className="cursor-pointer block">
-          <UploadCloud className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mx-auto mb-1" />
-          <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-            {uploading ? "Uploading PNGs..." : "Drop PNG elements here"}
-          </p>
+        <UploadCloud className="w-5 h-5 text-indigo-500 mx-auto mb-1" />
+        <label className="cursor-pointer text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+          <span>{uploading ? "Uploading..." : "Upload Traits / PNGs"}</span>
+          <input
+            type="file"
+            multiple
+            accept="image/*"
+            disabled={uploading}
+            onChange={(e) => e.target.files && handleUploadFiles(e.target.files)}
+            className="hidden"
+          />
         </label>
+        <p className="text-[10px] text-slate-400 mt-0.5">Drag & drop files or click to browse</p>
       </div>
 
-      {/* Elements Grid - Clean Stacked Layout preventing overflow */}
-      <div className="flex-1 overflow-y-auto space-y-2 pr-0.5">
+      {/* Elements Grid List */}
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1">
         {loading ? (
-          <div className="text-center py-6 text-slate-400 text-xs">Loading elements...</div>
+          <div className="text-center py-8 text-xs text-slate-400 font-mono">Loading elements...</div>
         ) : elements.length === 0 ? (
-          <div className="text-center py-8 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
-            <p className="text-slate-400 text-xs">No elements in "{layer.name}".</p>
+          <div className="text-center py-8 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+            <p className="text-slate-400 text-xs font-medium">No elements in this layer</p>
           </div>
         ) : (
           elements.map((el) => {
-            const rarityPct = totalWeight > 0 ? ((el.weight / totalWeight) * 100).toFixed(1) : 0;
-            const isActive = activeElementId === el.id;
-            const cleanName = el.filename.replace(/^.*?_/, "").replace(/\.[^/.]+$/, "");
+            const isSelectedForPreview = activeElementId === el.id;
+            const weightPercent =
+              totalWeight > 0 ? Math.round(((el.weight || 1) / totalWeight) * 100) : 0;
 
             return (
               <div
                 key={el.id}
-                className={`p-2 studio-card flex flex-col gap-1.5 transition-all ${
-                  isActive ? "border-2 border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/30" : ""
+                className={`p-2.5 rounded-xl border transition-all space-y-2 ${
+                  isSelectedForPreview
+                    ? "bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-500"
+                    : "bg-slate-50/50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800 hover:border-slate-300"
                 }`}
               >
-                {/* Header Row: Thumbnail + Title + Rarity + Actions */}
-                <div className="flex items-center justify-between gap-2 min-w-0">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className="w-9 h-9 rounded bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
-                      <img
-                        src={api.getElementImageUrl(el.id)}
-                        alt={cleanName}
-                        className="max-w-full max-h-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = "none";
-                        }}
-                      />
-                    </div>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex items-center justify-center shrink-0">
+                    <img
+                      src={`/api/uploads/${el.filename}`}
+                      alt={el.filename}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
 
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span
-                        className="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate"
-                        title={cleanName}
-                      >
-                        {cleanName}
-                      </span>
-                      <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-semibold">
-                        {rarityPct}% rarity
-                      </span>
-                    </div>
+                  <div className="flex-1 min-w-0">
+                    <h5 className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">
+                      {el.filename.replace(/^.*?-/, "").replace(/\.png$/i, "")}
+                    </h5>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      Rarity: {weightPercent}% (wt: {el.weight})
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={() => onSelectElementForPreview?.(el.id)}
-                      className={`p-1 rounded text-[10px] font-mono flex items-center gap-0.5 border transition-colors ${
-                        isActive
+                      className={`p-1.5 rounded-lg border transition-colors ${
+                        isSelectedForPreview
                           ? "bg-indigo-600 text-white border-indigo-600"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:text-indigo-600"
+                          : "bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800 hover:text-indigo-600"
                       }`}
-                      title="Set as active canvas preview trait"
+                      title="Preview on Canvas"
                     >
-                      {isActive ? (
-                        <Check className="w-3 h-3 text-white" />
-                      ) : (
-                        <Eye className="w-3 h-3" />
-                      )}
+                      {isSelectedForPreview ? <Check className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                     </button>
                     <button
                       onClick={() => handleDeleteElement(el.id)}
-                      className="p-1 text-slate-400 hover:text-red-500 rounded"
-                      title="Delete element"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 transition-colors"
+                      title="Delete Element"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Sub Row: Rarity Weight Slider */}
-                <div className="flex items-center gap-2 text-[10px] text-slate-500 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                  <span className="font-mono text-slate-400 shrink-0">W: {el.weight}</span>
+                {/* Weight Input Range */}
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-200/50 dark:border-slate-800/50">
+                  <Sliders className="w-3 h-3 text-slate-400 shrink-0" />
                   <input
                     type="range"
-                    min="0"
+                    min="1"
                     max="100"
-                    value={el.weight}
+                    value={el.weight || 1}
                     onChange={(e) => handleWeightChange(el.id, Number.parseInt(e.target.value, 10))}
-                    className="flex-1 h-1 bg-slate-200 dark:bg-slate-800 rounded appearance-none cursor-pointer accent-indigo-600"
+                    className="flex-1 accent-indigo-600 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="100"
+                    value={el.weight || 1}
+                    onChange={(e) =>
+                      handleWeightChange(el.id, Math.max(1, Number.parseInt(e.target.value, 10) || 1))
+                    }
+                    className="w-10 px-1 py-0.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded text-[10px] font-mono text-center text-slate-800 dark:text-slate-200 focus:outline-none"
                   />
                 </div>
               </div>
