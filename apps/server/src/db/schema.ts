@@ -31,7 +31,7 @@ export const projects = sqliteTable("projects", {
   canvasHeight: integer("canvas_height").default(4096),
   smoothing: integer("smoothing", { mode: "boolean" }).default(true),
   rarityDelim: text("rarity_delim").default("#"),
-  dnaTolerance: integer("dna_tolerance").default(2),
+  dnaTolerance: integer("dna_tolerance").default(10000),
   bgGenerate: integer("bg_generate", { mode: "boolean" }).default(false),
   bgBrightness: text("bg_brightness"),
   bgStatic: integer("bg_static", { mode: "boolean" }).default(false),

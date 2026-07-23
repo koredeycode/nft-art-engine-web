@@ -146,6 +146,7 @@ export async function generate(
 
         dnaList.add(filterDNAOptions(newDna));
         editionCount++;
+        failedCount = 0;
         abstractedIndexes.shift();
 
         onProgress?.({
@@ -157,7 +158,7 @@ export async function generate(
         failedCount++;
         if (failedCount >= config.dnaTolerance) {
           throw new Error(
-            `Failed after ${failedCount} attempts. Need more layers or elements to grow to ${layerConfig.growEditionSizeTo} artworks.`,
+            `Failed after ${failedCount} consecutive duplicate DNA attempts (tolerance limit: ${config.dnaTolerance}). Need more layers or elements to generate ${layerConfig.growEditionSizeTo} unique artworks.`,
           );
         }
       }

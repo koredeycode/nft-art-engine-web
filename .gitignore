@@ -10,3 +10,4 @@ apps/server/data/
 .env.local
 *.log
 *.tsbuildinfo
+personal/
