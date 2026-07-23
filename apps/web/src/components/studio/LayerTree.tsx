@@ -2,6 +2,8 @@ import { type Layer, api } from "@/lib/api";
 import {
   AlertCircle,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   GripVertical,
   Image as ImageIcon,
@@ -20,6 +22,8 @@ interface LayerTreeProps {
   projectId: string;
   layers: Layer[];
   selectedLayerId: string | null;
+  isElementPanelOpen?: boolean;
+  onToggleElementPanel?: () => void;
   onSelectLayer: (layerId: string) => void;
   onLayerAdded: (newLayer: Layer) => void;
   onRefresh: () => void;
@@ -131,6 +135,8 @@ export function LayerTree({
   projectId,
   layers,
   selectedLayerId,
+  isElementPanelOpen = true,
+  onToggleElementPanel,
   onSelectLayer,
   onLayerAdded,
   onRefresh,
@@ -198,7 +204,7 @@ export function LayerTree({
       <div className="studio-panel h-full flex flex-col border-r border-slate-200 dark:border-slate-800 select-none bg-slate-50/50 dark:bg-slate-950/50">
         {/* Panel Header */}
         <div className="p-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 shrink-0">
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
             <LayersIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
             <h3 className="font-bold text-slate-900 dark:text-slate-100 text-xs tracking-tight truncate">
               Layers
@@ -208,16 +214,29 @@ export function LayerTree({
             </span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setShowAddSection(!showAddSection)}
-            className="px-2 py-1 rounded text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors flex items-center gap-1 shrink-0"
-            title="Toggle Add Layer panel"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>Add</span>
-            {showAddSection ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setShowAddSection(!showAddSection)}
+              className="px-2 py-1 rounded text-xs font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors flex items-center gap-0.5 shrink-0"
+              title="Toggle Add Layer panel"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              {showAddSection ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+
+            {/* Toggle Element Column Button */}
+            {onToggleElementPanel && (
+              <button
+                type="button"
+                onClick={onToggleElementPanel}
+                className="p-1 rounded text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                title={isElementPanelOpen ? "Hide Layer Element Column" : "Show Layer Element Column"}
+              >
+                {isElementPanelOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
         {error && (
@@ -279,7 +298,7 @@ export function LayerTree({
           </div>
         )}
 
-        {/* Layer List with react-dnd */}
+        {/* Layer List */}
         <div className="p-2 space-y-2 overflow-y-auto flex-1">
           {localLayers.length === 0 ? (
             <div className="text-center py-10 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl m-2">

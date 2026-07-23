@@ -2,7 +2,6 @@ import { CustomSelect } from "@/components/ui/CustomSelect";
 import { type NFTMetadata, api } from "@/lib/api";
 import {
   Archive,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
@@ -39,7 +38,6 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
   // Pagination state
   const [pageSize, setPageSize] = useState<number>(20);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [autoNavigate, setAutoNavigate] = useState<boolean>(true);
 
   const prevLengthRef = useRef<number>(0);
 
@@ -49,12 +47,10 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
       const data = await api.get<number[]>(`/exports/${jId}/editions`);
       setEditions(data);
 
-      // Auto-navigate to latest generated page if autoNavigate is enabled during generation
+      // Automatically navigate to latest page as new editions generate
       if (data.length > prevLengthRef.current) {
-        if (autoNavigate) {
-          const lastPage = Math.max(1, Math.ceil(data.length / pageSize));
-          setCurrentPage(lastPage);
-        }
+        const lastPage = Math.max(1, Math.ceil(data.length / pageSize));
+        setCurrentPage(lastPage);
         prevLengthRef.current = data.length;
       }
     } catch {
@@ -82,7 +78,7 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [jobId, isOpen, pageSize, autoNavigate]);
+  }, [jobId, isOpen, pageSize]);
 
   const inspectEdition = async (edition: number, targetJobId = jobId) => {
     if (!targetJobId) return;
@@ -111,7 +107,7 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
         className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-50 transition-opacity"
       />
 
-      {/* Drawer Container (Expands max-w-5xl for master-detail pagination viewer) */}
+      {/* Drawer Container */}
       <div className="fixed inset-y-0 right-0 w-full max-w-5xl bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-50 flex flex-col transition-transform duration-300 select-none">
         {/* Drawer Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/90 dark:bg-slate-950/90 shrink-0">
@@ -130,17 +126,6 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Auto Follow Checkbox */}
-            <label className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-mono text-slate-600 dark:text-slate-400 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={autoNavigate}
-                onChange={(e) => setAutoNavigate(e.target.checked)}
-                className="accent-indigo-600 rounded cursor-pointer"
-              />
-              <span>Auto-Follow</span>
-            </label>
-
             {jobId && editions.length > 0 && (
               <a
                 href={`/api/exports/${jobId}/download`}
@@ -172,7 +157,7 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
           </div>
         </div>
 
-        {/* Drawer Body - Responsive Grid & Slide-in Detail Inspector */}
+        {/* Drawer Body */}
         <div className="flex-1 flex min-h-0 overflow-hidden relative">
           {/* Main Gallery Grid Area */}
           <div className="flex-1 p-4 overflow-y-auto min-w-0">
@@ -240,7 +225,7 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
             )}
           </div>
 
-          {/* Right Detail Inspector Panel (Opens when an image is clicked) */}
+          {/* Right Detail Inspector Panel */}
           {jobId && selectedEdition !== null && activeMetadata && (
             <div className="w-80 sm:w-96 h-full p-4 overflow-y-auto bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 animate-in slide-in-from-right duration-200 shadow-xl z-10">
               <div className="space-y-4">
@@ -353,13 +338,14 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
         </div>
 
         {/* Footer Pagination Toolbar */}
-        <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/90 flex flex-wrap items-center justify-between gap-3 shrink-0">
-          {/* Page Size Selector */}
+        <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-950/90 flex flex-wrap items-center justify-between gap-3 shrink-0 relative z-30">
+          {/* Upward Dropdown for Page Size */}
           <div className="flex items-center gap-2">
             <span className="text-xs text-slate-500 font-medium hidden sm:inline">Per page:</span>
             <CustomSelect
               value={pageSize}
               options={PAGE_SIZE_OPTIONS}
+              direction="up"
               onChange={(val) => {
                 setPageSize(Number(val));
                 setCurrentPage(1);

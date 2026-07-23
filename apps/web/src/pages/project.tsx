@@ -50,6 +50,7 @@ export function ProjectPage() {
   // Panels Toggle State
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [isCopilotOpen, setIsCopilotOpen] = useState(true);
+  const [isElementPanelOpen, setIsElementPanelOpen] = useState(true);
 
   // Resizable Column Widths State (Left Double-Column & Right Copilot Panel)
   const [leftWidth, setLeftWidth] = useState(540);
@@ -146,6 +147,7 @@ export function ProjectPage() {
   const handleLayerAdded = (newLayer: Layer) => {
     setLayers((prev) => [...prev, newLayer]);
     setSelectedLayerId(newLayer.id);
+    setIsElementPanelOpen(true);
   };
 
   const handleLayerDeleted = (deletedId: string) => {
@@ -275,46 +277,55 @@ export function ProjectPage() {
         </div>
       </Navbar>
 
-      {/* Main Studio - 3 Column Layout (Left Double-Column, Middle Canvas, Right AI Copilot) */}
+      {/* Main Studio - 3 Column Layout */}
       <main className="flex-1 flex w-full h-[calc(100vh-56px)] overflow-hidden relative">
-        {/* LEFT DOUBLE-COLUMN: Layers List (Column 1) + Layer Details & Elements (Column 2) */}
+        {/* LEFT DOUBLE-COLUMN: Layers List (Column 1) + Optional Layer Details & Elements (Column 2) */}
         <div
-          style={{ width: `${leftWidth}px` }}
-          className="h-full shrink-0 flex flex-row min-w-[380px] max-w-[800px] border-r border-slate-200 dark:border-slate-800 overflow-hidden"
+          style={{ width: isElementPanelOpen ? `${leftWidth}px` : "220px" }}
+          className="h-full shrink-0 flex flex-row border-r border-slate-200 dark:border-slate-800 overflow-hidden transition-all duration-200"
         >
-          {/* Column 1: Layers List (Compact Cards, Large Preview Images, react-dnd) */}
+          {/* Column 1: Layers List */}
           <div className="w-[220px] h-full shrink-0 flex flex-col">
             <LayerTree
               projectId={project.id}
               layers={layers}
               selectedLayerId={selectedLayerId}
-              onSelectLayer={(id) => setSelectedLayerId(id)}
+              isElementPanelOpen={isElementPanelOpen}
+              onToggleElementPanel={() => setIsElementPanelOpen(!isElementPanelOpen)}
+              onSelectLayer={(id) => {
+                setSelectedLayerId(id);
+                setIsElementPanelOpen(true);
+              }}
               onLayerAdded={handleLayerAdded}
               onRefresh={handleRefresh}
             />
           </div>
 
-          {/* Column 2: Layer Details & Traits Manager */}
-          <div className="flex-1 h-full min-w-0 flex flex-col">
-            <ElementManager
-              layer={selectedLayer}
-              layers={layers}
-              activeElementId={selectedLayerId ? activeTraitsMap[selectedLayerId] : null}
-              onSelectElementForPreview={handleSelectElementForPreview}
-              onLayerDeleted={handleLayerDeleted}
-              onRefresh={handleRefresh}
-            />
-          </div>
+          {/* Column 2: Layer Details & Traits Manager (Collapsible) */}
+          {isElementPanelOpen && (
+            <div className="flex-1 h-full min-w-0 flex flex-col">
+              <ElementManager
+                layer={selectedLayer}
+                layers={layers}
+                activeElementId={selectedLayerId ? activeTraitsMap[selectedLayerId] : null}
+                onSelectElementForPreview={handleSelectElementForPreview}
+                onLayerDeleted={handleLayerDeleted}
+                onRefresh={handleRefresh}
+              />
+            </div>
+          )}
         </div>
 
         {/* LEFT RESIZER DIVIDER */}
-        <div
-          onMouseDown={startLeftResize}
-          className="w-1.5 h-full bg-slate-200 dark:bg-slate-800/80 hover:bg-indigo-500/80 cursor-col-resize shrink-0 transition-colors z-10 flex items-center justify-center group"
-          title="Drag to resize Left Double-Column panel"
-        >
-          <div className="w-0.5 h-8 bg-slate-400 dark:bg-slate-600 group-hover:bg-white rounded-full" />
-        </div>
+        {isElementPanelOpen && (
+          <div
+            onMouseDown={startLeftResize}
+            className="w-1.5 h-full bg-slate-200 dark:bg-slate-800/80 hover:bg-indigo-500/80 cursor-col-resize shrink-0 transition-colors z-10 flex items-center justify-center group"
+            title="Drag to resize Left Double-Column panel"
+          >
+            <div className="w-0.5 h-8 bg-slate-400 dark:bg-slate-600 group-hover:bg-white rounded-full" />
+          </div>
+        )}
 
         {/* CENTER COLUMN: Canvas Viewport with Clear Canvas Control */}
         <div className="flex-1 h-full min-w-0 flex flex-col bg-slate-200/50 dark:bg-slate-950/70 relative overflow-hidden">
