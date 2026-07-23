@@ -13,6 +13,7 @@ interface CustomSelectProps {
   onChange: (value: any) => void;
   placeholder?: string;
   direction?: "up" | "down";
+  align?: "left" | "right";
   className?: string;
 }
 
@@ -22,6 +23,7 @@ export function CustomSelect({
   onChange,
   placeholder = "Select...",
   direction = "down",
+  align = "left",
   className = "",
 }: CustomSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +60,9 @@ export function CustomSelect({
 
       {isOpen && (
         <div
-          className={`absolute right-0 w-52 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-150 ${
+          className={`absolute w-52 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl z-50 p-1 space-y-0.5 animate-in fade-in zoom-in-95 duration-150 ${
+            align === "right" ? "right-0" : "left-0"
+          } ${
             direction === "up" ? "bottom-full mb-1.5" : "top-full mt-1.5"
           }`}
         >
