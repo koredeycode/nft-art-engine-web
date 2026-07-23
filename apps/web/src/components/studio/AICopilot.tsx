@@ -1,6 +1,6 @@
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import {
   Bot,
-  ChevronDown,
   Mic,
   MicOff,
   Send,
@@ -23,9 +23,9 @@ interface Message {
 }
 
 const AI_MODELS = [
-  { id: "gpt-4o", name: "gpt-4o" },
-  { id: "deepseek-r1", name: "deepseek-r1" },
-  { id: "gemini-2.5-flash", name: "gemini-2.5-flash" },
+  { value: "gpt-4o", label: "gpt-4o", sublabel: "OpenAI Multimodal" },
+  { value: "deepseek-r1", label: "deepseek-r1", sublabel: "DeepSeek Reasoning" },
+  { value: "gemini-2.5-flash", label: "gemini-2.5-flash", sublabel: "Google Ultra-fast" },
 ];
 
 export function AICopilot({ projectName, onClose }: AICopilotProps) {
@@ -150,28 +150,20 @@ export function AICopilot({ projectName, onClose }: AICopilotProps) {
           />
 
           <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-800/60">
-            {/* Model Selection Dropdown */}
-            <div className="relative">
-              <select
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="appearance-none bg-slate-200/60 dark:bg-slate-900 border border-slate-300/60 dark:border-slate-800 rounded-md pl-2.5 pr-7 py-1 text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300 focus:outline-none cursor-pointer"
-              >
-                {AI_MODELS.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.name}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
+            {/* Custom Styled Model Selection Dropdown */}
+            <CustomSelect
+              value={selectedModel}
+              options={AI_MODELS}
+              direction="up"
+              onChange={(val) => setSelectedModel(val)}
+            />
 
             {/* Actions: Mic & Send */}
             <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setIsRecording(!isRecording)}
-                className={`p-1.5 rounded-md border transition-colors ${
+                className={`p-1.5 rounded-xl border transition-colors ${
                   isRecording
                     ? "bg-red-50 dark:bg-red-950 text-red-600 border-red-200 dark:border-red-800 animate-pulse"
                     : "bg-slate-200/60 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300/60 dark:border-slate-800 hover:text-slate-900 dark:hover:text-white"
@@ -184,7 +176,7 @@ export function AICopilot({ projectName, onClose }: AICopilotProps) {
               <button
                 type="submit"
                 disabled={!input.trim()}
-                className="p-1.5 bg-slate-300 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 rounded-md border border-slate-300/60 dark:border-slate-700 disabled:opacity-40 disabled:hover:bg-slate-300 dark:disabled:hover:bg-slate-800 transition-colors"
+                className="p-1.5 bg-slate-300 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 rounded-xl border border-slate-300/60 dark:border-slate-700 disabled:opacity-40 disabled:hover:bg-slate-300 dark:disabled:hover:bg-slate-800 transition-colors"
                 title="Send message"
               >
                 <Send className="w-3.5 h-3.5" />
