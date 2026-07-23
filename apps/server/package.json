@@ -1,5 +1,5 @@
 {
-  "name": "@nft-engine/server",
+  "name": "@mintrix/server",
   "version": "0.0.1",
   "private": true,
   "type": "module",
@@ -18,7 +18,7 @@
     "@hono/zod-validator": "^0.4.0",
     "@libsql/client": "^0.14.0",
     "@napi-rs/canvas": "^1.0.2",
-    "@nft-engine/shared": "workspace:*",
+    "@mintrix/shared": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/auto-instrumentations-node": "^0.52.0",
     "@opentelemetry/exporter-prometheus": "^0.55.0",

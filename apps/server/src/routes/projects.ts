@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { zValidator } from "@hono/zod-validator";
-import { createProjectSchema, updateProjectSchema } from "@nft-engine/shared";
+import { createProjectSchema, updateProjectSchema } from "@mintrix/shared";
 import { eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/index.js";
@@ -11,11 +11,17 @@ export const projectsRouter = new Hono();
 
 projectsRouter.get("/", async (c) => {
   const user = await getUserFromContext(c);
-  const allProjects = await db.select().from(projects).all();
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+  const userProjects = await db
+    .select()
+    .from(projects)
+    .where(eq(projects.userId, user.id))
+    .all();
 
   // Attach layer and element counts for rich dashboard cards
   const projectList = await Promise.all(
-    allProjects.map(async (p) => {
+    userProjects.map(async (p) => {
       const projLayers = await db.select().from(layers).where(eq(layers.projectId, p.id)).all();
 
       let elementCount = 0;
@@ -41,20 +47,24 @@ projectsRouter.get("/", async (c) => {
 });
 
 projectsRouter.get("/:id", async (c) => {
+  const user = await getUserFromContext(c);
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
   const id = c.req.param("id");
   const project = await db.select().from(projects).where(eq(projects.id, id)).get();
-  if (!project) return c.json({ error: "not found" }, 404);
+  if (!project || project.userId !== user.id) return c.json({ error: "Not found" }, 404);
   return c.json(project);
 });
 
 projectsRouter.post("/", zValidator("json", createProjectSchema), async (c) => {
-  const data = c.req.valid("json");
   const user = await getUserFromContext(c);
-  const userId = user?.id ?? "default";
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+  const data = c.req.valid("json");
   const now = new Date();
   const project = {
     id: crypto.randomUUID(),
-    userId,
+    userId: user.id,
     name: data.name,
     createdAt: now,
     updatedAt: now,
@@ -64,10 +74,14 @@ projectsRouter.post("/", zValidator("json", createProjectSchema), async (c) => {
 });
 
 projectsRouter.patch("/:id", zValidator("json", updateProjectSchema), async (c) => {
+  const user = await getUserFromContext(c);
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
   const id = c.req.param("id");
   const data = c.req.valid("json");
   const existing = await db.select().from(projects).where(eq(projects.id, id)).get();
-  if (!existing) return c.json({ error: "not found" }, 404);
+  if (!existing || existing.userId !== user.id) return c.json({ error: "Not found" }, 404);
+
   await db
     .update(projects)
     .set({ ...data, updatedAt: new Date() })
@@ -78,7 +92,13 @@ projectsRouter.patch("/:id", zValidator("json", updateProjectSchema), async (c) 
 });
 
 projectsRouter.delete("/:id", async (c) => {
+  const user = await getUserFromContext(c);
+  if (!user) return c.json({ error: "Unauthorized" }, 401);
+
   const id = c.req.param("id");
+  const existing = await db.select().from(projects).where(eq(projects.id, id)).get();
+  if (!existing || existing.userId !== user.id) return c.json({ error: "Not found" }, 404);
+
   // Delete associated layers and elements
   const projLayers = await db.select().from(layers).where(eq(layers.projectId, id)).all();
 

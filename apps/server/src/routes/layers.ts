@@ -7,7 +7,7 @@ import {
   reorderLayersSchema,
   updateElementWeightSchema,
   updateLayerSchema,
-} from "@nft-engine/shared";
+} from "@mintrix/shared";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/index.js";

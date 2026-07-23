@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { zValidator } from "@hono/zod-validator";
-import { startGenerationSchema } from "@nft-engine/shared";
+import { startGenerationSchema } from "@mintrix/shared";
 import { eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/index.js";

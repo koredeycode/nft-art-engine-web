@@ -88,7 +88,7 @@ export function DashboardPage() {
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-xs font-semibold mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
-                NFT Art Engine Studio
+                Mintrix Studio Workspace
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                 Generative NFT Collections

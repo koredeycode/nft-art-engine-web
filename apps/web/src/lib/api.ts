@@ -16,6 +16,7 @@ async function request<T>(
   const options: RequestInit = {
     method,
     headers,
+    credentials: "include",
   };
   if (body) {
     options.body = isFormData ? (body as FormData) : JSON.stringify(body);

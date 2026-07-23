@@ -6,11 +6,11 @@ After any change, always run in order:
 
 ```bash
 pnpm install
-pnpm --filter @nft-engine/shared typecheck
-pnpm --filter @nft-engine/server typecheck
-pnpm --filter @nft-engine/web typecheck
-pnpm --filter @nft-engine/server test
-pnpm --filter @nft-engine/web build
+pnpm --filter @mintrix/shared typecheck
+pnpm --filter @mintrix/server typecheck
+pnpm --filter @mintrix/web typecheck
+pnpm --filter @mintrix/server test
+pnpm --filter @mintrix/web build
 ```
 
 ## Git Convention
@@ -24,7 +24,7 @@ pnpm --filter @nft-engine/web build
 ## Project Structure
 
 ```
-nft-art-engine-web/
+mintrix/
 ├── apps/
 │   ├── server/       # Hono.js API server
 │   └── web/          # Vite + React 19 frontend
