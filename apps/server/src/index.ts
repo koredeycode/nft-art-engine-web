@@ -10,13 +10,14 @@ import { logger } from "./lib/logger.js";
 import { initTelemetry } from "./lib/observability.js";
 import { initWebSocket } from "./lib/ws.js";
 import { exportsRouter } from "./routes/exports.js";
-import { generationRouter } from "./routes/generation.js";
+import { cleanupOrphanedJobs, generationRouter } from "./routes/generation.js";
 import { layersRouter } from "./routes/layers.js";
 import { projectsRouter } from "./routes/projects.js";
 
 initTelemetry();
 
 await runMigrations();
+await cleanupOrphanedJobs();
 
 const app = new Hono();
 

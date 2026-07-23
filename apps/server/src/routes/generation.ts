@@ -3,13 +3,38 @@ import fs from "node:fs";
 import path from "node:path";
 import { zValidator } from "@hono/zod-validator";
 import { startGenerationSchema } from "@nft-engine/shared";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { elements, generationJobs, layers, projects } from "../db/schema.js";
 import { generate } from "../engine/generator.js";
 import { logger } from "../lib/logger.js";
 import { broadcastJobProgress } from "../lib/ws.js";
+
+export async function cleanupOrphanedJobs() {
+  try {
+    const orphanedJobs = await db
+      .select()
+      .from(generationJobs)
+      .where(inArray(generationJobs.status, ["running", "queued"]))
+      .all();
+
+    if (orphanedJobs.length > 0) {
+      await db
+        .update(generationJobs)
+        .set({
+          status: "failed",
+          error: "Server process restarted mid-generation.",
+          updatedAt: new Date(),
+        })
+        .where(inArray(generationJobs.status, ["running", "queued"]))
+        .run();
+      logger.info({ count: orphanedJobs.length }, "cleaned up orphaned generation jobs on startup");
+    }
+  } catch (err) {
+    logger.error({ err }, "failed to clean up orphaned generation jobs");
+  }
+}
 
 export const generationRouter = new Hono();
 
@@ -93,9 +118,11 @@ async function runGenerationJob(jobId: string, projectId: string, totalEditions:
       .run();
 
     broadcastJobProgress(jobId, "running", 0, 0, totalEditions);
+    logger.info({ jobId, projectId, totalEditions }, "generation job started");
 
     const rarityDelimiter = project.rarityDelim ?? "#";
-    const dnaTolerance = project.dnaTolerance ?? 1000;
+    const dnaTolerance =
+      !project.dnaTolerance || project.dnaTolerance <= 10 ? 10000 : project.dnaTolerance;
     const shuffleOrder = project.shuffleOrder ?? false;
     const canvasWidth = project.canvasWidth ?? 512;
     const canvasHeight = project.canvasHeight ?? 512;
@@ -145,6 +172,8 @@ async function runGenerationJob(jobId: string, projectId: string, totalEditions:
       ],
     };
 
+    const logStep = Math.max(1, Math.floor(totalEditions / 10));
+
     await generate(config, async (prog) => {
       const progressPercent = Math.min(
         100,
@@ -161,6 +190,13 @@ async function runGenerationJob(jobId: string, projectId: string, totalEditions:
         .run();
 
       broadcastJobProgress(jobId, "running", progressPercent, prog.currentEdition, totalEditions);
+
+      if (prog.currentEdition % logStep === 0 || prog.currentEdition === totalEditions) {
+        logger.info(
+          { jobId, currentEdition: prog.currentEdition, totalEditions, progressPercent },
+          `generation progress: ${prog.currentEdition}/${totalEditions} (${progressPercent}%)`,
+        );
+      }
     });
 
     await db
@@ -176,9 +212,11 @@ async function runGenerationJob(jobId: string, projectId: string, totalEditions:
       .run();
 
     broadcastJobProgress(jobId, "completed", 100, totalEditions, totalEditions);
+    logger.info({ jobId, totalEditions }, "generation job completed successfully");
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    logger.error({ jobId, error: errorMsg }, "Generation job failed");
+    const errorStack = err instanceof Error ? err.stack : undefined;
+    logger.error({ jobId, error: errorMsg, stack: errorStack }, "Generation job failed");
 
     await db
       .update(generationJobs)
@@ -241,4 +279,31 @@ generationRouter.get("/jobs/:projectId", async (c) => {
     .orderBy(generationJobs.createdAt)
     .all();
   return c.json(jobs);
+});
+
+generationRouter.post("/cancel/:jobId", async (c) => {
+  const jobId = c.req.param("jobId");
+  const job = await db.select().from(generationJobs).where(eq(generationJobs.id, jobId)).get();
+  if (!job) return c.json({ error: "not found" }, 404);
+
+  if (job.status === "running" || job.status === "queued") {
+    await db
+      .update(generationJobs)
+      .set({
+        status: "cancelled",
+        error: "Generation job cancelled",
+        updatedAt: new Date(),
+      })
+      .where(eq(generationJobs.id, jobId))
+      .run();
+    broadcastJobProgress(
+      jobId,
+      "cancelled",
+      job.progress ?? 0,
+      job.currentEdition ?? 0,
+      job.totalEditions,
+    );
+  }
+
+  return c.json({ status: "cancelled" });
 });
