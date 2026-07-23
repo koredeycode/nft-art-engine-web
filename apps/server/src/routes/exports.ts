@@ -58,10 +58,27 @@ exportsRouter.get("/:jobId/metadata", async (c) => {
   const jobId = c.req.param("jobId");
 
   const filePath = getJobFilePath(jobId, "json", "_metadata.json");
-  if (!filePath) return c.json({ error: "not found" }, 404);
+  if (filePath && fs.existsSync(filePath)) {
+    const data = fs.readFileSync(filePath, "utf-8");
+    return c.json(JSON.parse(data));
+  }
 
-  const data = fs.readFileSync(filePath, "utf-8");
-  return c.json(JSON.parse(data));
+  const jsonDir = path.join(BUILD_DIR, jobId, "json");
+  if (fs.existsSync(jsonDir)) {
+    const files = fs.readdirSync(jsonDir).filter((f) => f.endsWith(".json") && f !== "_metadata.json");
+    const metadataList = files
+      .map((f) => {
+        try {
+          return JSON.parse(fs.readFileSync(path.join(jsonDir, f), "utf-8"));
+        } catch {
+          return null;
+        }
+      })
+      .filter(Boolean);
+    return c.json(metadataList);
+  }
+
+  return c.json([]);
 });
 
 exportsRouter.get("/:jobId/gif/:edition", async (c) => {

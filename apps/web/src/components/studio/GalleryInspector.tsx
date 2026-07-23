@@ -216,24 +216,22 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
 
           <div className="flex items-center gap-2">
             {/* Filter Toggle Button */}
-            {Object.keys(availableTraitsMap).length > 0 && (
-              <button
-                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors shadow-xs ${
-                  isFilterOpen || activeFilterCount > 0
-                    ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800"
-                    : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-indigo-300"
-                }`}
-              >
-                <Filter className="w-3.5 h-3.5 text-indigo-500" />
-                <span>Filter Traits</span>
-                {activeFilterCount > 0 && (
-                  <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-            )}
+            <button
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-colors shadow-xs ${
+                isFilterOpen || activeFilterCount > 0
+                  ? "bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 border-indigo-300 dark:border-indigo-800"
+                  : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-indigo-300"
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5 text-indigo-500" />
+              <span>Filter Traits</span>
+              {activeFilterCount > 0 && (
+                <span className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-bold">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
 
             {jobId && editions.length > 0 && (
               <a
@@ -267,7 +265,7 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
         </div>
 
         {/* Expandable Trait Filter Bar / Drawer */}
-        {isFilterOpen && Object.keys(availableTraitsMap).length > 0 && (
+        {isFilterOpen && (
           <div className="p-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 space-y-2 shrink-0 animate-in slide-in-from-top-2 duration-150">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
@@ -283,32 +281,38 @@ export function GalleryInspector({ jobId, isOpen, onClose }: GalleryInspectorPro
               )}
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-              {Object.keys(availableTraitsMap).map((traitType) => {
-                const options = [
-                  { value: "", label: `All ${traitType}` },
-                  ...availableTraitsMap[traitType]!.map((val) => ({
-                    value: val,
-                    label: val,
-                  })),
-                ];
-                const activeVal = selectedTraitsFilter[traitType] || "";
+            {Object.keys(availableTraitsMap).length === 0 ? (
+              <p className="text-xs text-slate-400 italic py-2">
+                No trait metadata loaded yet. Generate artwork editions to populate trait filters.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {Object.keys(availableTraitsMap).map((traitType) => {
+                  const options = [
+                    { value: "", label: `All ${traitType}` },
+                    ...availableTraitsMap[traitType]!.map((val) => ({
+                      value: val,
+                      label: val,
+                    })),
+                  ];
+                  const activeVal = selectedTraitsFilter[traitType] || "";
 
-                return (
-                  <div key={traitType} className="space-y-1">
-                    <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 truncate block">
-                      {traitType}
-                    </label>
-                    <CustomSelect
-                      value={activeVal}
-                      options={options}
-                      onChange={(val) => handleFilterChange(traitType, val)}
-                      className="w-full"
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                  return (
+                    <div key={traitType} className="space-y-1">
+                      <label className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 truncate block">
+                        {traitType}
+                      </label>
+                      <CustomSelect
+                        value={activeVal}
+                        options={options}
+                        onChange={(val) => handleFilterChange(traitType, val)}
+                        className="w-full"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Active Filter Pills */}
             {activeFilterCount > 0 && (
