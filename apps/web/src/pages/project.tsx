@@ -7,17 +7,20 @@ import { NFTCompositor } from "@/components/studio/NFTCompositor";
 import { type GenerationJob, type Layer, type Project, api } from "@/lib/api";
 import { ArrowLeft, Grid, Play, RefreshCw, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Link, useLoaderData, useRevalidator } from "react-router";
-import type { LoaderFunctionArgs } from "react-router";
+import { Link, type LoaderFunctionArgs, redirect, useLoaderData, useRevalidator } from "react-router";
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  const projectId = params.id as string;
-  const [project, projectLayers, jobs] = await Promise.all([
-    api.get<Project>(`/projects/${projectId}`),
-    api.get<Layer[]>(`/layers/project/${projectId}`),
-    api.get<GenerationJob[]>(`/generation/jobs/${projectId}`),
-  ]);
-  return { project, layers: projectLayers, jobs };
+  try {
+    const projectId = params.id as string;
+    const [project, projectLayers, jobs] = await Promise.all([
+      api.get<Project>(`/projects/${projectId}`),
+      api.get<Layer[]>(`/layers/project/${projectId}`),
+      api.get<GenerationJob[]>(`/generation/jobs/${projectId}`),
+    ]);
+    return { project, layers: projectLayers, jobs };
+  } catch {
+    return redirect("/auth") as never;
+  }
 }
 
 export function ProjectPage() {
